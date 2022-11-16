@@ -1,0 +1,19 @@
+
+*{
+    box-sizing: border-box;
+}
+
+div div .ranks{
+    display: none;
+}
+div div .files{
+    display: none;
+}
+
+.chessgroundWrapper:focus{
+    outline: none;
+}
+
+.iconButton{
+    cursor: pointer;
+}
