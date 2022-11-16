@@ -40,9 +40,13 @@ class Asteroid {
     }
 
     //Draw the asteroid to the canvas
-    draw(ctx) {
+    draw(canvas, ctx, simulWidth, simulHeight) {
+
+	let px = (this.x / simulWidth) * canvas.width * 1.05
+	let py = (this.y / simulHeight) * canvas.height * 1.05
+
         ctx.beginPath()
-        ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false)
+        ctx.arc(px, py, this.r, 0, 2 * Math.PI, false)
         ctx.fillStyle = this.fillStyle
         ctx.shadowColor = this.shadowColor
         ctx.shadowBlur = this.shadowBlur
@@ -71,7 +75,7 @@ class Simulation {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         //draw each asteroid
         for (let asteroid of this.asteroids) {
-            asteroid.draw(ctx)
+            asteroid.draw(canvas, ctx, this.width, this.height)
         }
     }
 
@@ -98,8 +102,8 @@ class Simulation {
                 new Asteroid(
                     Math.random() * this.width,         //random x
                     0,                                  //top of screen
-                    Math.random() * this.MAXVELOCITY * 0.5 - this.MAXVELOCITY * 0.25,// / this.AVGSLOPE,// - this.MAXVELOCITY / (this.AVGSLOPE * 2),
-                    Math.random() * this.MAXVELOCITY,  //random positive y velocity
+                    ( Math.random() * 0.5 - 0.25 ) * this.MAXVELOCITY,  //vx in (-0.25 , 0.25)
+                    Math.random() * this.MAXVELOCITY,  //vy in (0, 1)
 		    this.MAXRADIUS
 		)
             )
@@ -111,7 +115,7 @@ class Simulation {
 class App extends React.Component {
     constructor(props){
         super(props)
-        this.simul = new Simulation(10000, 10000)
+        this.simul = new Simulation(1000, 1000)
         this.simul.randomAsteroids()
         this.canvasRef = React.createRef()
     }
@@ -134,19 +138,23 @@ class App extends React.Component {
 
 
     onKeyDown(e){
-	console.log( e.keyCode )
     	if( e.keyCode == 37 ){			//left
 		this.simul.MAXVELOCITY /= 2
 	}else if( e.keyCode == 38 ){		//up
-		this.simul.PROBNEWASTEROID *= 2
+		this.simul.PROBNEWASTEROID += 0.1
+		if( this.simul.PROBNEWASTEROID > 1 ){
+			this.simul.PROBNEWASTEROID = 1
+		}
 	}else if( e.keyCode == 39 ){		//right
 		this.simul.MAXVELOCITY *= 2
 	}else if( e.keyCode == 40 ){		//down
-		this.simul.PROBNEWASTEROID /= 2
+		this.simul.PROBNEWASTEROID -= 0.1
+		if( this.simul.PROBNEWASTEROID < 0 ){
+			this.simul.PROBNEWASTEROID = 0
+		}
 	}else if( e.keyCode == 32 ){		//enter
         	this.simul.paused = !this.simul.paused
 	}
-	console.log( this.simul )
     }
 
     render(){

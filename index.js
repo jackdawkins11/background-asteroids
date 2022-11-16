@@ -57,9 +57,13 @@ var Asteroid = function () {
 
     }, {
         key: "draw",
-        value: function draw(ctx) {
+        value: function draw(canvas, ctx, simulWidth, simulHeight) {
+
+            var px = this.x / simulWidth * canvas.width * 1.05;
+            var py = this.y / simulHeight * canvas.height * 1.05;
+
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+            ctx.arc(px, py, this.r, 0, 2 * Math.PI, false);
             ctx.fillStyle = this.fillStyle;
             ctx.shadowColor = this.shadowColor;
             ctx.shadowBlur = this.shadowBlur;
@@ -104,7 +108,7 @@ var Simulation = function () {
                 for (var _iterator = this.asteroids[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var asteroid = _step.value;
 
-                    asteroid.draw(ctx);
+                    asteroid.draw(canvas, ctx, this.width, this.height);
                 }
             } catch (err) {
                 _didIteratorError = true;
@@ -173,8 +177,8 @@ var Simulation = function () {
             if (Math.random() <= this.PROBNEWASTEROID) {
                 this.asteroids.push(new Asteroid(Math.random() * this.width, //random x
                 0, //top of screen
-                Math.random() * this.MAXVELOCITY * 0.5 - this.MAXVELOCITY * 0.25, // / this.AVGSLOPE,// - this.MAXVELOCITY / (this.AVGSLOPE * 2),
-                Math.random() * this.MAXVELOCITY, //random positive y velocity
+                (Math.random() * 0.5 - 0.25) * this.MAXVELOCITY, //vx in (-0.25 , 0.25)
+                Math.random() * this.MAXVELOCITY, //vy in (0, 1)
                 this.MAXRADIUS));
             }
         }
@@ -191,7 +195,7 @@ var App = function (_React$Component) {
 
         var _this2 = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
-        _this2.simul = new Simulation(10000, 10000);
+        _this2.simul = new Simulation(1000, 1000);
         _this2.simul.randomAsteroids();
         _this2.canvasRef = React.createRef();
         return _this2;
@@ -220,24 +224,28 @@ var App = function (_React$Component) {
     }, {
         key: "onKeyDown",
         value: function onKeyDown(e) {
-            console.log(e.keyCode);
             if (e.keyCode == 37) {
                 //left
                 this.simul.MAXVELOCITY /= 2;
             } else if (e.keyCode == 38) {
                 //up
-                this.simul.PROBNEWASTEROID *= 2;
+                this.simul.PROBNEWASTEROID += 0.1;
+                if (this.simul.PROBNEWASTEROID > 1) {
+                    this.simul.PROBNEWASTEROID = 1;
+                }
             } else if (e.keyCode == 39) {
                 //right
                 this.simul.MAXVELOCITY *= 2;
             } else if (e.keyCode == 40) {
                 //down
-                this.simul.PROBNEWASTEROID /= 2;
+                this.simul.PROBNEWASTEROID -= 0.1;
+                if (this.simul.PROBNEWASTEROID < 0) {
+                    this.simul.PROBNEWASTEROID = 0;
+                }
             } else if (e.keyCode == 32) {
                 //enter
                 this.simul.paused = !this.simul.paused;
             }
-            console.log(this.simul);
         }
     }, {
         key: "render",
